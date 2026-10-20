@@ -11,8 +11,11 @@ export const DEFAULT_OPTIONS: PasswordOptions = {
   noAmbiguous: true,
 }
 
-// Настройки переживают уход со страницы и перезагрузку.
+// Настройки переживают уход со страницы и перезагрузку; getOnInit — чтобы форма
+// получила сохранённое значение в defaultValues, а не дефолт с последующей подменой.
 export const passwordOptionsAtom = atomWithStorage<PasswordOptions>(
   'password-options',
   DEFAULT_OPTIONS,
+  undefined,
+  {getOnInit: true},
 )

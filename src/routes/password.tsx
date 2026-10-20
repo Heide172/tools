@@ -11,6 +11,7 @@ import {passwordQueryOptions, type PasswordData} from '#/queries/password'
 import {passwordOptionsAtom} from '#/state/password'
 import {Button} from '#/ui/button'
 import {Checkbox} from '#/ui/checkbox'
+import {NumberField} from '#/ui/number-field'
 import {Slider} from '#/ui/slider'
 
 export const Route = createFileRoute('/password')({component: PasswordPage})
@@ -78,22 +79,29 @@ function PasswordPage() {
       </div>
 
       <form className="mt-7 grid gap-2.5">
-        <label className="flex items-center gap-4">
-          длина
-          <Controller
-            control={control}
-            name="length"
-            render={({field}) => (
+        <Controller
+          control={control}
+          name="length"
+          render={({field}) => (
+            <div className="flex items-center gap-4">
+              длина
               <Slider
                 min={6}
                 max={64}
                 value={field.value}
                 onValueChange={field.onChange}
               />
-            )}
-          />
-          <output className="min-w-[3ch] text-right">{opts.length}</output>
-        </label>
+              <NumberField
+                min={6}
+                max={64}
+                value={field.value}
+                onValueChange={v => {
+                  if (v !== null) field.onChange(v)
+                }}
+              />
+            </div>
+          )}
+        />
         {[...SET_KEYS, 'noAmbiguous' as const].map(key => (
           <label key={key} className="flex cursor-pointer items-center gap-2.5">
             <Controller
