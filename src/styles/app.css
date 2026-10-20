@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+/* Токены. Утилитарный моноширинный вид, тема от системы через light-dark(). */
+@theme {
+  --color-*: initial;
+  --color-bg: light-dark(#f4f3ef, #141513);
+  --color-panel: light-dark(#ebe9e3, #1c1d1a);
+  --color-line: light-dark(#cfcdc4, #2e2f2b);
+  --color-line-strong: light-dark(#9e9c93, #4a4b46);
+  --color-ink: light-dark(#1b1b1a, #d9d7cf);
+  --color-ink-dim: light-dark(#6d6c66, #7d7c74);
+  --color-ink-head: light-dark(#000000, #f1efe8);
+  --color-digit: light-dark(#1f5fb3, #7fb0ff);
+  --color-symbol: light-dark(#b3341f, #ff8a70);
+  --color-ok: light-dark(#2d7a3e, #7fd18f);
+  --color-danger: light-dark(#b3341f, #ff8a70);
+
+  --font-*: initial;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-*: initial;
+  --text-xs: 12px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 13px;
+  --text-sm--line-height: 1.5;
+  --text-base: 15px;
+  --text-base--line-height: 1.5;
+  --text-lg: 18px;
+  --text-lg--line-height: 1.4;
+  --text-pw: 22px;
+  --text-pw--line-height: 1.4;
+
+  --shadow-*: initial;
+  --shadow-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-ink);
+
+  --radius-*: initial;
+  --radius-sm: 2px;
+
+  --breakpoint-*: initial;
+  --breakpoint-sm: 390px;
+  --breakpoint-md: 760px;
+  --breakpoint-xl: 1360px;
+}
+
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+  body {
+    @apply bg-bg font-mono text-base text-ink;
+  }
+  kbd {
+    @apply rounded-sm border border-line px-1;
+  }
+}

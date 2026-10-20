@@ -1,140 +1,15 @@
 <!doctype html>
 <html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Генератор паролей · tools.atonyan.dev</title>
-<meta name="description" content="Случайные пароли в браузере, без отправки на сервер.">
-<style>
-  :root {
-    color-scheme: light dark;
-    --bg: light-dark(#f4f3ef, #141513);
-    --fg: light-dark(#1b1b1a, #d9d7cf);
-    --mute: light-dark(#6d6c66, #7d7c74);
-    --line: light-dark(#cfcdc4, #2e2f2b);
-    --digit: light-dark(#1f5fb3, #7fb0ff);
-    --symbol: light-dark(#b3341f, #ff8a70);
-    --ok: light-dark(#2d7a3e, #7fd18f);
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--fg);
-    font: 15px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  }
-  header, main { max-width: 680px; margin: 0 auto; padding: 0 16px; }
-  header { padding-top: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; }
-  header a { color: var(--fg); text-decoration: none; }
-  header span { color: var(--mute); }
-  h1 { font-size: 15px; font-weight: 600; margin: 32px 0 12px; }
-  #out {
-    width: 100%; min-height: 72px; padding: 16px; margin: 0;
-    border: 1px solid var(--line); border-radius: 2px; background: transparent;
-    font: inherit; font-size: 22px; line-height: 1.4; letter-spacing: .04em;
-    overflow-wrap: anywhere; cursor: pointer; user-select: all; text-align: left;
-    color: var(--fg);
-  }
-  #out:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-  #out .d { color: var(--digit); }
-  #out .s { color: var(--symbol); }
-  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
-  button.act {
-    font: inherit; padding: 8px 14px; border: 1px solid var(--fg); border-radius: 2px;
-    background: var(--fg); color: var(--bg); cursor: pointer;
-  }
-  button.act.ghost { background: transparent; color: var(--fg); }
-  #status { color: var(--ok); min-width: 12ch; }
-  #status:empty { display: none; }
-  .meta { color: var(--mute); margin-left: auto; }
-  fieldset { border: 0; padding: 0; margin: 28px 0 0; display: grid; gap: 10px; }
-  label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  label.len { gap: 16px; }
-  input[type=range] { flex: 1; accent-color: var(--fg); }
-  input[type=checkbox] { width: 16px; height: 16px; margin: 0; accent-color: var(--fg); }
-  output { min-width: 3ch; text-align: right; }
-  footer { max-width: 680px; margin: 48px auto 32px; padding: 0 16px; color: var(--mute); font-size: 13px; }
-  kbd { border: 1px solid var(--line); border-radius: 2px; padding: 0 4px; }
-</style>
-</head>
-<body>
-<header>
-  <a href="/">tools.atonyan.dev</a>
-  <span>пароли</span>
-</header>
-<main>
-  <h1>Случайный пароль</h1>
-  <button id="out" title="Нажми, чтобы скопировать" aria-live="polite"></button>
-  <div class="row">
-    <button class="act" id="again">Ещё</button>
-    <button class="act ghost" id="copy">Скопировать</button>
-    <span id="status"></span>
-    <span class="meta" id="bits"></span>
-  </div>
-  <fieldset id="opts">
-    <label class="len">длина <input type="range" name="len" min="6" max="64" value="20"> <output id="lenv">20</output></label>
-    <label><input type="checkbox" name="upper" checked> прописные A–Z</label>
-    <label><input type="checkbox" name="lower" checked> строчные a–z</label>
-    <label><input type="checkbox" name="digits" checked> цифры 0–9</label>
-    <label><input type="checkbox" name="symbols" checked> символы !@#$%…</label>
-    <label><input type="checkbox" name="noAmbiguous" checked> без похожих 0 O 1 l I |</label>
-  </fieldset>
-</main>
-<footer>Всё считается в браузере через crypto.getRandomValues, на сервер ничего не уходит. <kbd>Пробел</kbd> — новый пароль, <kbd>Enter</kbd> — скопировать.</footer>
-<script type="module">
-import { generate, entropyBits } from './gen.js';
-const $ = (s) => document.querySelector(s);
-const form = $('#opts'), f = (k) => form.elements[k], out = $('#out'), status = $('#status');
-const KEY = 'pw-opts';
-
-function readOpts() {
-  const o = { length: +f('len').value };
-  for (const k of ['upper', 'lower', 'digits', 'symbols', 'noAmbiguous']) o[k] = f(k).checked;
-  return o;
-}
-function render(pw) {
-  out.replaceChildren(...[...pw].map((c) => {
-    const el = document.createElement('span');
-    el.textContent = c;
-    if (/\d/.test(c)) el.className = 'd';
-    else if (/[^a-z]/i.test(c)) el.className = 's';
-    return el;
-  }));
-}
-function make() {
-  const o = readOpts();
-  $('#lenv').value = o.length;
-  try { localStorage.setItem(KEY, JSON.stringify(o)); } catch {}
-  status.textContent = '';
-  try {
-    render(generate(o));
-    $('#bits').textContent = entropyBits(o) + ' бит';
-  } catch {
-    out.textContent = '';
-    $('#bits').textContent = 'выбери хотя бы один набор';
-  }
-}
-async function copy() {
-  if (!out.textContent) return;
-  await navigator.clipboard.writeText(out.textContent);
-  status.textContent = 'скопировано';
-  setTimeout(() => { status.textContent = ''; }, 1500);
-}
-
-try {
-  const saved = JSON.parse(localStorage.getItem(KEY));
-  if (saved) for (const [k, v] of Object.entries(saved)) {
-    if (k === 'length') f('len').value = v; else if (f(k)) f(k).checked = v;
-  }
-} catch {}
-form.addEventListener('input', make);
-$('#again').onclick = make;
-$('#copy').onclick = copy;
-out.onclick = copy;
-document.addEventListener('keydown', (e) => {
-  if (e.target.matches('input') || e.metaKey || e.ctrlKey) return;
-  if (e.code === 'Space') { e.preventDefault(); make(); }
-  if (e.key === 'Enter' && e.target === document.body) copy();
-});
-make();
-</script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tools.atonyan.dev</title>
+    <meta
+      name="description"
+      content="Мелкие утилиты: генератор паролей и другое. Всё считается в браузере." />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
